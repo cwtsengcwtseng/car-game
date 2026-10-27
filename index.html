@@ -8,7 +8,6 @@
   <meta name="theme-color" content="#10B981">
   <meta name="mobile-web-app-capable" content="yes">
 
-  <!-- 外部 CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -34,12 +33,12 @@
     <div class="flex items-center gap-2 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-sm border border-emerald-200">
       <span class="text-xl">🏆</span>
       <span id="star-count" class="text-lg font-bold text-emerald-600">0</span>
-      <span class="text-xs text-gray-400 font-semibold">/ <span id="deck-progress">20</span></span>
+      <span class="text-xs text-gray-400 font-semibold">/ <span id="deck-progress">16</span></span>
     </div>
 
     <div class="flex items-center gap-2">
       <span class="text-xs font-bold bg-white/80 border border-teal-200 text-teal-700 px-2.5 py-1 rounded-full shadow-sm">
-        🟢 離線版
+        🟢 本機真實標誌
       </span>
       <button id="btn-sound" onclick="toggleAudio()" class="btn-jelly w-9 h-9 bg-white/90 border border-emerald-200 rounded-full flex items-center justify-center text-base shadow-sm">
         🔊
@@ -58,14 +57,10 @@
           <span class="text-gray-300">Tap to Reveal</span>
         </div>
 
-        <!-- 車標本體區 (使用 jsDelivr 高清開源向量 CDN + 錯誤回退) -->
+        <!-- 真實車標圖檔區 -->
         <div class="w-full flex-1 flex flex-col items-center justify-center py-2">
-          <div class="w-full aspect-square max-h-48 rounded-2xl bg-white border-2 border-slate-100 shadow-md flex items-center justify-center p-6 overflow-hidden">
-            <img id="logo-img" src="" alt="車標" class="max-h-32 max-w-[85%] object-contain filter drop-shadow transition-all duration-300" crossorigin="anonymous">
-            <div id="logo-fallback" class="hidden flex-col items-center justify-center">
-              <span id="fallback-icon" class="text-6xl filter drop-shadow"></span>
-              <span id="fallback-text" class="text-sm font-black text-slate-600 mt-2"></span>
-            </div>
+          <div class="w-full aspect-square max-h-52 rounded-2xl bg-white border-2 border-slate-100 shadow-inner flex items-center justify-center p-6">
+            <img id="logo-img" src="" alt="車標" class="max-h-40 max-w-[85%] object-contain filter drop-shadow">
           </div>
         </div>
 
@@ -121,19 +116,12 @@
   </footer>
 
   <script>
-    /* =====================================================================
-       1. 音效合成器 (純 Web Audio API，零外部檔案)
-       ===================================================================== */
     let audioCtx = null;
     let isSoundOn = true;
 
     function getAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
     }
 
@@ -194,235 +182,138 @@
       } catch(e) {}
     }
 
-    /* =====================================================================
-       2. 開源汽車品牌題庫 (使用 jsDelivr 開源 CDN，開放跨域，絕不 403)
-       ===================================================================== */
+    // 題庫讀取本地 ./logos/ 檔案
     const CARS_DB = [
       {
-        id: "tesla",
+        file: "./logos/tesla.png",
         zh: "特斯拉",
         en: "Tesla",
         origin: "🇺🇸 美國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/tesla.svg",
-        fallbackIcon: "⚡",
-        fallbackText: "TESLA",
         icons: "⚡ 🔋 🤖",
         fact: "不喝汽油、只吃電力的酷炫電動車！大大的 T 字母其實是電動馬達剖面的一部分！"
       },
       {
-        id: "lamborghini",
+        file: "./logos/lamborghini.png",
         zh: "藍寶堅尼",
         en: "Lamborghini",
         origin: "🇮🇹 義大利",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/lamborghini.svg",
-        fallbackIcon: "🐂",
-        fallbackText: "LAMBORGHINI",
         icons: "🐂 🏎️ ⚡",
         fact: "大家都叫它『大牛』！金色盾牌裡是一隻力氣超級大、準備向前衝撞的狂野公牛！"
       },
       {
-        id: "porsche",
+        file: "./logos/porsche.png",
         zh: "保時捷",
         en: "Porsche",
         origin: "🇩🇪 德國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/porsche.svg",
-        fallbackIcon: "🐎",
-        fallbackText: "PORSCHE",
         icons: "🐎 🛡️ 🏎️",
         fact: "德國的經典跑車！金色盾牌正中間有一匹精神抖擻的黑馬，還有美麗的鹿角條紋！"
       },
       {
-        id: "mercedes-benz",
+        file: "./logos/benz.png",
         zh: "賓士",
         en: "Mercedes-Benz",
         origin: "🇩🇪 德國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/mercedes-benz.svg",
-        fallbackIcon: "⭐",
-        fallbackText: "BENZ",
         icons: "⭐ 👑 🚗",
         fact: "三芒星標誌代表它在陸地、海洋與天空中都能奔馳！是路上非常高貴顯眼的代表！"
       },
       {
-        id: "ferrari",
+        file: "./logos/ferrari.png",
         zh: "法拉利",
         en: "Ferrari",
         origin: "🇮🇹 義大利",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/ferrari.svg",
-        fallbackIcon: "🐎",
-        fallbackText: "FERRARI",
         icons: "🐎 🏎️ 🚩",
         fact: "亮紅色的義大利超跑！一匹用兩隻腳站立起來、奮力嘶鳴的黑色神駒！"
       },
       {
-        id: "bmw",
+        file: "./logos/bmw.png",
         zh: "BMW (寶馬)",
         en: "BMW",
         origin: "🇩🇪 德國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/bmw.svg",
-        fallbackIcon: "🔵⚪",
-        fallbackText: "BMW",
         icons: "🔵 ⚪ 🏁",
         fact: "藍白相間的圖案來自德國巴伐利亞州的旗幟，看起來就像旋轉的飛機螺旋槳！"
       },
       {
-        id: "audi",
+        file: "./logos/audi.png",
         zh: "奧迪",
         en: "Audi",
         origin: "🇩🇪 德國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/audi.svg",
-        fallbackIcon: "⚪⚪⚪⚪",
-        fallbackText: "AUDI",
         icons: "💍 🏎️ ⚡",
         fact: "標誌上的四個銀色圓環，代表過去四家歷史悠久的汽車廠緊緊相扣、團結在一起！"
       },
       {
-        id: "maserati",
+        file: "./logos/maserati.png",
         zh: "瑪莎拉蒂",
         en: "Maserati",
         origin: "🇮🇹 義大利",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/maserati.svg",
-        fallbackIcon: "🔱",
-        fallbackText: "MASERATI",
         icons: "🔱 🌊 🏎️",
         fact: "大家都叫它『海神』！標誌是海神波賽頓手裡威力無窮的三叉戟！"
       },
       {
-        id: "toyota",
+        file: "./logos/toyota.png",
         zh: "豐田",
         en: "Toyota",
         origin: "🇯🇵 日本",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/toyota.svg",
-        fallbackIcon: "🐂",
-        fallbackText: "TOYOTA",
         icons: "🐂 🚕 🌟",
         fact: "路上最常見的牛頭牌！三個橢圓圈緊密交疊，象徵車廠與車主心心相印！"
       },
       {
-        id: "volkswagen",
+        file: "./logos/volkswagen.png",
         zh: "福斯",
         en: "Volkswagen",
         origin: "🇩🇪 德國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/volkswagen.svg",
-        fallbackIcon: "🔷",
-        fallbackText: "VW",
         icons: "🐞 🚙 💙",
         fact: "招牌的金龜車超級可愛！藍色圈圈裡巧妙疊合著英文字母 V 與 W！"
       },
       {
-        id: "lexus",
+        file: "./logos/lexus.png",
         zh: "凌志 (Lexus)",
         en: "Lexus",
         origin: "🇯🇵 日本",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/lexus.svg",
-        fallbackIcon: "✨",
-        fallbackText: "LEXUS",
         icons: "✨ 🛋️ 🚗",
         fact: "豐田家族的頂級豪華名車！銀色橢圓包著俐落優雅的 L 字母！"
       },
       {
-        id: "mini",
+        file: "./logos/mini.png",
         zh: "MINI (迷你)",
         en: "MINI",
         origin: "🇬🇧 英國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/mini.svg",
-        fallbackIcon: "🪽",
-        fallbackText: "MINI",
         icons: "🇬🇧 🚗 🪽",
         fact: "圓圓可愛的英倫小車！黑色圓圈兩旁長著展開的銀色小翅膀！"
       },
       {
-        id: "volvo",
+        file: "./logos/volvo.png",
         zh: "富豪 (Volvo)",
         en: "Volvo",
         origin: "🇸🇪 瑞典",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/volvo.svg",
-        fallbackIcon: "🛡️",
-        fallbackText: "VOLVO",
         icons: "🛡️ 👶 🇸🇪",
         fact: "全世界最安全的車車！右上角帶有小箭頭的鋼鐵圓環，象徵堅不可摧的守護！"
       },
       {
-        id: "ford",
+        file: "./logos/ford.png",
         zh: "福特",
         en: "Ford",
         origin: "🇺🇸 美國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/ford.svg",
-        fallbackIcon: "🚙",
-        fallbackText: "FORD",
         icons: "🛻 🏭 💙",
         fact: "深藍色的漂亮橢圓裡，寫著優美的手寫簽名，是美國最普及的皮卡車霸主！"
       },
       {
-        id: "honda",
+        file: "./logos/honda.png",
         zh: "本田",
         en: "Honda",
         origin: "🇯🇵 日本",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/honda.svg",
-        fallbackIcon: "🔤",
-        fallbackText: "HONDA",
         icons: "🔤 🚗 🛵",
         fact: "經典大方的銀色『H』，不只會造省油耐用的休旅車，摩托車技術也是世界第一！"
       },
       {
-        id: "subaru",
+        file: "./logos/subaru.png",
         zh: "速霸陸",
         en: "Subaru",
         origin: "🇯🇵 日本",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/subaru.svg",
-        fallbackIcon: "✨",
-        fallbackText: "SUBARU",
         icons: "✨ 🌌 🚙",
         fact: "深藍夜空中的六顆閃亮昴宿星團！四輪驅動爬山抓地力超級厲害！"
-      },
-      {
-        id: "jeep",
-        zh: "吉普 (Jeep)",
-        en: "Jeep",
-        origin: "🇺🇸 美國",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/jeep.svg",
-        fallbackIcon: "🚜",
-        fallbackText: "JEEP",
-        icons: "🚜 🪖 🪨",
-        fact: "方正霸氣的車頭與七道柵欄進氣孔，跋山涉水、露營越野的最佳夥伴！"
-      },
-      {
-        id: "suzuki",
-        zh: "鈴木",
-        en: "Suzuki",
-        origin: "🇯🇵 日本",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/suzuki.svg",
-        fallbackIcon: "🔴",
-        fallbackText: "SUZUKI",
-        icons: "🚙 🏔️ 🔴",
-        fact: "鮮紅色的英文字母『S』，像超人胸前的徽章一樣俐落，吉普車 Jimny 超級有人氣！"
-      },
-      {
-        id: "hyundai",
-        zh: "現代",
-        en: "Hyundai",
-        origin: "🇰🇷 南韓",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/hyundai.svg",
-        fallbackIcon: "🤝",
-        fallbackText: "HYUNDAI",
-        icons: "🤝 🚙 ⚡",
-        fact: "斜斜的『H』看起來像兩個人正在開心地握手交朋友，路上能見度非常高！"
-      },
-      {
-        id: "mazda",
-        zh: "馬自達",
-        en: "Mazda",
-        origin: "🇯🇵 日本",
-        logo: "https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/mazda.svg",
-        fallbackIcon: "🕊️",
-        fallbackText: "MAZDA",
-        icons: "🦅 🕊️ 🚗",
-        fact: "橢圓形中間有一對展開的海鷗翅膀，象徵展翅飛翔追逐夢想！"
       }
     ];
 
-    /* =====================================================================
-       3. 遊戲控制器與翻牌邏輯
-       ===================================================================== */
     let deck = [];
     let currentIndex = 0;
     let stars = 0;
@@ -444,31 +335,14 @@
       const data = deck[idx];
       document.getElementById('current-index').textContent = idx + 1;
 
-      // 載入車標圖片
-      const img = document.getElementById('logo-img');
-      const fallback = document.getElementById('logo-fallback');
-      
-      img.classList.remove('hidden');
-      fallback.classList.add('hidden');
+      document.getElementById('logo-img').src = data.file;
 
-      img.onerror = () => {
-        // 如果網路極差連 CDN 都載入失敗，自動切換至備用圖示，確保絕對不出現破圖符號
-        img.classList.add('hidden');
-        fallback.classList.remove('hidden');
-        document.getElementById('fallback-icon').textContent = data.fallbackIcon;
-        document.getElementById('fallback-text').textContent = data.fallbackText;
-      };
-
-      img.src = data.logo;
-
-      // 載入背面解答
       document.getElementById('country-badge').textContent = data.origin;
       document.getElementById('car-zh').textContent = data.zh;
       document.getElementById('car-en').textContent = data.en;
       document.getElementById('car-icons').textContent = data.icons;
       document.getElementById('car-fact').textContent = data.fact;
 
-      // 按鈕狀態重設
       document.getElementById('action-reveal').classList.remove('hidden');
       document.getElementById('action-next').classList.add('hidden');
     }
@@ -516,10 +390,6 @@
       uZh.lang = 'zh-TW';
       window.speechSynthesis.speak(uEn);
       uEn.onend = () => setTimeout(() => window.speechSynthesis.speak(uZh), 120);
-    }
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
     }
 
     window.addEventListener('DOMContentLoaded', initGame);
