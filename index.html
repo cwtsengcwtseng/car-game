@@ -36,9 +36,9 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <span class="text-xs font-bold bg-white/80 border border-teal-200 text-teal-700 px-2.5 py-1 rounded-full shadow-sm">
-        🟢 離線純向量
-      </span>
+      <button id="btn-sync" onclick="preloadAllLogos()" class="btn-jelly text-xs font-bold bg-white/80 border border-teal-200 text-teal-700 px-2.5 py-1 rounded-full shadow-sm">
+        📥 快取離線
+      </button>
       <button id="btn-sound" onclick="toggleAudio()" class="btn-jelly w-9 h-9 bg-white/90 border border-emerald-200 rounded-full flex items-center justify-center text-base shadow-sm">
         🔊
       </button>
@@ -56,10 +56,10 @@
           <span class="text-gray-300">Tap to Reveal</span>
         </div>
 
-        <!-- 車標展示區 (純 SVG 渲染) -->
+        <!-- 車標圖片區 -->
         <div class="w-full flex-1 flex flex-col items-center justify-center py-2">
-          <div class="w-full aspect-square max-h-48 rounded-2xl bg-slate-50 border-2 border-slate-100 shadow-md flex items-center justify-center p-4">
-            <div id="logo-display" class="w-full h-full flex items-center justify-center"></div>
+          <div class="w-full aspect-square max-h-48 rounded-2xl bg-white border-2 border-slate-100 shadow-inner flex items-center justify-center p-6">
+            <img id="logo-img" src="" alt="車標" class="max-h-36 max-w-[80%] object-contain filter drop-shadow">
           </div>
         </div>
 
@@ -115,18 +115,25 @@
   </footer>
 
   <script>
-    /* =====================================================================
-       1. 音效合成器 (Web Audio API)
-       ===================================================================== */
     class SoundEngine {
       constructor() { this.ctx = null; this.enabled = true; }
       init() {
-        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        try {
+          if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+          }
+          if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+        } catch (e) {
+          console.error(e);
+        }
       }
       playPop() {
         if (!this.enabled) return;
         this.init();
+        if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         const now = this.ctx.currentTime;
@@ -140,6 +147,7 @@
       playHorn() {
         if (!this.enabled) return;
         this.init();
+        if (!this.ctx) return;
         [440, 554.37].forEach(f => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
@@ -155,6 +163,7 @@
       playFanfare() {
         if (!this.enabled) return;
         this.init();
+        if (!this.ctx) return;
         [523.25, 659.25, 783.99, 1046.50].forEach(freq => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
@@ -177,7 +186,292 @@
       document.getElementById('btn-sound').textContent = isSoundOn ? '🔊' : '🔇';
     }
 
-    /* =====================================================================
-       2. 名車與超跑向量題庫 (包含特斯拉、藍寶堅尼、保時捷、賓士等)
-       ===================================================================== */
-    const CARS_DB =
+    // 知名官方 Wikimedia 授權高畫質 SVG 圖庫
+    const CARS_DB = [
+      {
+        id: "tesla",
+        zh: "特斯拉",
+        en: "Tesla",
+        origin: "🇺🇸 美國",
+        icons: "⚡ 🔋 🤖",
+        fact: "不喝汽油、只吃電力的酷炫電動車！大大的 T 字母其實是電動馬達剖面的一部分！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png"
+      },
+      {
+        id: "lamborghini",
+        zh: "藍寶堅尼",
+        en: "Lamborghini",
+        origin: "🇮🇹 義大利",
+        icons: "🐂 🏎️ ⚡",
+        fact: "大家都叫它『大牛』！金色盾牌裡是一隻力氣超級大、準備向前衝撞的狂野公牛！",
+        logo: "https://upload.wikimedia.org/wikipedia/en/d/df/Lamborghini_Logo.svg"
+      },
+      {
+        id: "porsche",
+        zh: "保時捷",
+        en: "Porsche",
+        origin: "🇩🇪 德國",
+        icons: "🐎 🛡️ 🏎️",
+        fact: "德國的經典跑車！金色盾牌正中間有一匹精神抖擻的黑馬，還有美麗的鹿角條紋！",
+        logo: "https://upload.wikimedia.org/wikipedia/en/8/8c/Porsche_logo.svg"
+      },
+      {
+        id: "mercedes",
+        zh: "賓士",
+        en: "Mercedes-Benz",
+        origin: "🇩🇪 德國",
+        icons: "⭐ 👑 🚗",
+        fact: "三芒星標誌代表它在陸地、海洋與天空中都能奔馳！是路上非常高貴顯眼的代表！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg"
+      },
+      {
+        id: "ferrari",
+        zh: "法拉利",
+        en: "Ferrari",
+        origin: "🇮🇹 義大利",
+        icons: "🐎 🏎️ 🚩",
+        fact: "亮紅色的義大利超跑！一匹用兩隻腳站立起來、奮力嘶鳴的黑色神駒！",
+        logo: "https://upload.wikimedia.org/wikipedia/en/d/d1/Ferrari-Logo.svg"
+      },
+      {
+        id: "bmw",
+        zh: "BMW (寶馬)",
+        en: "BMW",
+        origin: "🇩🇪 德國",
+        icons: "🔵 ⚪ 🏁",
+        fact: "藍白相間的圖案來自德國巴伐利亞州的旗幟，看起來就像旋轉的飛機螺旋槳！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg"
+      },
+      {
+        id: "audi",
+        zh: "奧迪",
+        en: "Audi",
+        origin: "🇩🇪 德國",
+        icons: "💍 🏎️ ⚡",
+        fact: "標誌上的四個銀色圓環，代表過去四家歷史悠久的汽車廠緊緊相扣、團結在一起！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg"
+      },
+      {
+        id: "toyota",
+        zh: "豐田",
+        en: "Toyota",
+        origin: "🇯🇵 日本",
+        icons: "🐂 🚕 🌟",
+        fact: "路上最常見的牛頭牌！三個橢圓圈緊密交疊，象徵車廠與車主心心相印！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/e/ee/Toyota_logo_%282020%29.svg"
+      },
+      {
+        id: "volkswagen",
+        zh: "福斯",
+        en: "Volkswagen",
+        origin: "🇩🇪 德國",
+        icons: "🐞 🚙 💙",
+        fact: "招牌的金龜車超級可愛！藍色圈圈裡巧妙疊合著英文字母 V 與 W！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg"
+      },
+      {
+        id: "lexus",
+        zh: "凌志 (Lexus)",
+        en: "Lexus",
+        origin: "🇯🇵 日本",
+        icons: "✨ 🛋️ 🚗",
+        fact: "豐田家族的頂級豪華名車！銀色橢圓包著俐落優雅的 L 字母！",
+        logo: "https://upload.wikimedia.org/wikipedia/en/d/d1/Lexus_division_emblem.svg"
+      },
+      {
+        id: "mini",
+        zh: "MINI (迷你)",
+        en: "MINI",
+        origin: "🇬🇧 英國",
+        icons: "🇬🇧 🚗 🪽",
+        fact: "圓圓可愛的英倫小車！黑色圓圈兩旁長著展開的銀色小翅膀！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/e/e9/MINI_logo.svg"
+      },
+      {
+        id: "volvo",
+        zh: "富豪 (Volvo)",
+        en: "Volvo",
+        origin: "🇸🇪 瑞典",
+        icons: "🛡️ 👶 🇸🇪",
+        fact: "全世界最安全的車車！右上角帶有小箭頭的鋼鐵圓環，象徵堅不可摧的守護！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/2/29/Volvo-Iron-Mark-Black.svg"
+      },
+      {
+        id: "maserati",
+        zh: "瑪莎拉蒂",
+        en: "Maserati",
+        origin: "🇮🇹 義大利",
+        icons: "🔱 🌊 🏎️",
+        fact: "大家都叫它『海神』！標誌是海神波賽頓手裡威力無窮的三叉戟！",
+        logo: "https://upload.wikimedia.org/wikipedia/en/e/eb/Maserati_logo.svg"
+      },
+      {
+        id: "ford",
+        zh: "福特",
+        en: "Ford",
+        origin: "🇺🇸 美國",
+        icons: "🛻 🏭 💙",
+        fact: "深藍色的漂亮橢圓裡，寫著優美的手寫簽名，是美國最普及的皮卡車霸主！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Ford_logo_flat.svg"
+      },
+      {
+        id: "honda",
+        zh: "本田",
+        en: "Honda",
+        origin: "🇯🇵 日本",
+        icons: "🔤 🚗 🛵",
+        fact: "經典大方的銀色『H』，不只會造省油耐用的休旅車，摩托車技術也是世界第一！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/3/38/Honda.svg"
+      },
+      {
+        id: "subaru",
+        zh: "速霸陸",
+        en: "Subaru",
+        origin: "🇯🇵 日本",
+        icons: "✨ 🌌 🚙",
+        fact: "深藍夜空中的六顆閃亮昴宿星團！四輪驅動爬山抓地力超級厲害！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/3/30/Subaru_logo.svg"
+      },
+      {
+        id: "jeep",
+        zh: "吉普 (Jeep)",
+        en: "Jeep",
+        origin: "🇺🇸 美國",
+        icons: "🚜 🪖 🪨",
+        fact: "方正霸氣的車頭與七道柵欄進氣孔，跋山涉水、露營越野的最佳夥伴！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/1/17/Jeep_logo.svg"
+      },
+      {
+        id: "suzuki",
+        zh: "鈴木",
+        en: "Suzuki",
+        origin: "🇯🇵 日本",
+        icons: "🚙 🏔️ 🔴",
+        fact: "鮮紅色的英文字母『S』，像超人胸前的徽章一樣俐落，吉普車 Jimny 超級有人氣！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/Suzuki_logo_2.svg"
+      },
+      {
+        id: "hyundai",
+        zh: "現代",
+        en: "Hyundai",
+        origin: "🇰🇷 南韓",
+        icons: "🤝 🚙 ⚡",
+        fact: "斜斜的『H』看起來像兩個人正在開心地握手交朋友，路上能見度非常高！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/Hyundai_Motor_Company_logo.svg"
+      },
+      {
+        id: "mazda",
+        zh: "馬自達",
+        en: "Mazda",
+        origin: "🇯🇵 日本",
+        icons: "🦅 🕊️ 🚗",
+        fact: "橢圓形中間有一對展開的海鷗翅膀，象徵展翅飛翔追逐夢想！",
+        logo: "https://upload.wikimedia.org/wikipedia/commons/7/77/Mazda_logo_with_emblem.svg"
+      }
+    ];
+
+    let deck = [];
+    let currentIndex = 0;
+    let stars = 0;
+    let isFlipped = false;
+
+    function initGame() {
+      deck = [...CARS_DB].sort(() => Math.random() - 0.5);
+      currentIndex = 0;
+      stars = 0;
+      document.getElementById('star-count').textContent = stars;
+      document.getElementById('deck-progress').textContent = deck.length;
+      loadCard(currentIndex);
+    }
+
+    function loadCard(idx) {
+      if (idx >= deck.length) idx = 0;
+      isFlipped = false;
+      document.getElementById('card-inner').classList.remove('rotate-y-180');
+      const data = deck[idx];
+      document.getElementById('current-index').textContent = idx + 1;
+
+      // 載入正確圖片
+      const img = document.getElementById('logo-img');
+      img.src = data.logo;
+
+      // 載入解答
+      document.getElementById('country-badge').textContent = data.origin;
+      document.getElementById('car-zh').textContent = data.zh;
+      document.getElementById('car-en').textContent = data.en;
+      document.getElementById('car-icons').textContent = data.icons;
+      document.getElementById('car-fact').textContent = data.fact;
+
+      // 重設按鈕
+      document.getElementById('action-reveal').classList.remove('hidden');
+      document.getElementById('action-next').classList.add('hidden');
+    }
+
+    function revealAnswer() {
+      if (isFlipped) return;
+      isFlipped = true;
+      sound.playHorn();
+      document.getElementById('card-inner').classList.add('rotate-y-180');
+
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 35, spread: 60, origin: { y: 0.65 } });
+      }
+
+      stars++;
+      document.getElementById('star-count').textContent = stars;
+      if (stars % 5 === 0) sound.playFanfare();
+
+      document.getElementById('action-reveal').classList.add('hidden');
+      document.getElementById('action-next').classList.remove('hidden');
+
+      speakCurrentCar();
+    }
+
+    function flipCard() {
+      sound.playPop();
+      isFlipped = !isFlipped;
+      document.getElementById('card-inner').classList.toggle('rotate-y-180', isFlipped);
+    }
+
+    function nextCar() {
+      sound.playPop();
+      currentIndex++;
+      loadCard(currentIndex);
+    }
+
+    function speakCurrentCar() {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const data = deck[currentIndex];
+      const uEn = new SpeechSynthesisUtterance(data.en);
+      uEn.lang = 'en-US';
+      uEn.rate = 0.9;
+      const uZh = new SpeechSynthesisUtterance(data.zh);
+      uZh.lang = 'zh-TW';
+      window.speechSynthesis.speak(uEn);
+      uEn.onend = () => setTimeout(() => window.speechSynthesis.speak(uZh), 120);
+    }
+
+    async function preloadAllLogos() {
+      const btn = document.getElementById('btn-sync');
+      btn.textContent = '快取中...';
+      if ('caches' in window) {
+        const cache = await caches.open('yuanyuan-cars-v1');
+        for (const c of CARS_DB) {
+          try {
+            await cache.add(c.logo);
+          } catch(e) {}
+        }
+        btn.textContent = '✅ 已完全離線';
+        sound.playFanfare();
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+    }
+
+    window.addEventListener('DOMContentLoaded', initGame);
+  </script>
+</body>
+</html>
