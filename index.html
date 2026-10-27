@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>🚗 媛媛的路上名車大冒險 🏎️</title>
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#10B981">
   <meta name="mobile-web-app-capable" content="yes">
 
@@ -32,12 +33,12 @@
     <div class="flex items-center gap-2 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-sm border border-emerald-200">
       <span class="text-xl">🏆</span>
       <span id="star-count" class="text-lg font-bold text-emerald-600">0</span>
-      <span class="text-xs text-gray-400 font-semibold">/ <span id="deck-progress">12</span></span>
+      <span class="text-xs text-gray-400 font-semibold">/ <span id="deck-progress">16</span></span>
     </div>
 
     <div class="flex items-center gap-2">
-      <span class="text-xs font-bold bg-white/80 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full shadow-sm">
-        🟢 100% 離線真車標
+      <span class="text-xs font-bold bg-white/80 border border-teal-200 text-teal-700 px-2.5 py-1 rounded-full shadow-sm">
+        🟢 真實名車標誌
       </span>
       <button id="btn-sound" onclick="toggleAudio()" class="btn-jelly w-9 h-9 bg-white/90 border border-emerald-200 rounded-full flex items-center justify-center text-base shadow-sm">
         🔊
@@ -56,10 +57,10 @@
           <span class="text-gray-300">Tap to Reveal</span>
         </div>
 
-        <!-- 車標本體區：內嵌 Base64，絕無任何網路請求，零破圖可能 -->
+        <!-- 真實透明底車標圖片區 -->
         <div class="w-full flex-1 flex flex-col items-center justify-center py-2">
-          <div class="w-full aspect-square max-h-52 rounded-2xl bg-white border-2 border-slate-100 shadow-md flex items-center justify-center p-6 overflow-hidden">
-            <img id="logo-img" src="" alt="車標" class="max-h-40 max-w-[85%] object-contain filter drop-shadow">
+          <div class="w-full aspect-square max-h-52 rounded-2xl bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center p-6 overflow-hidden">
+            <img id="logo-img" src="" alt="車標" class="max-h-40 max-w-[85%] object-contain filter drop-shadow transition-all duration-200" crossorigin="anonymous">
           </div>
         </div>
 
@@ -115,7 +116,7 @@
   </footer>
 
   <script>
-    /* 1. 音效引擎 */
+    /* 音效合成系統 */
     let audioCtx = null;
     let isSoundOn = true;
 
@@ -182,107 +183,142 @@
       } catch(e) {}
     }
 
-    /* 2. 官方真實廠徽 Base64 題庫 (零網路依賴，100% 離線渲染) */
+    /* 
+      使用 GitHub filippofilip95/car-logos-dataset 開源直連 PNG (無防盜鏈限制)
+    */
+    const BASE_URL = "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/";
     const CARS_DB = [
       {
+        logo: BASE_URL + "tesla.png",
         zh: "特斯拉",
         en: "Tesla",
         origin: "🇺🇸 美國",
         icons: "⚡ 🔋 🤖",
-        fact: "不喝汽油、只吃電力的酷炫電動車！大大的 T 字母其實是電動馬達剖面的一部分！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path fill='%23E82127' d='M15 22c22-7 48-7 70 0l-4 7c-19-6-43-6-62 0l-4-7zm35 12c-8 0-18 3-25 8l6 7c6-4 12-6 19-6s13 2 19 6l6-7c-7-5-17-8-25-8zm-4 13v39c2 2 6 2 8 0V47h-8z'/></svg>"
+        fact: "不喝汽油、只吃電力的酷炫電動車！大大的 T 字母其實是電動馬達剖面的一部分！"
       },
       {
-        zh: "賓士",
-        en: "Mercedes-Benz",
-        origin: "🇩🇪 德國",
-        icons: "⭐ 👑 🚗",
-        fact: "三芒星標誌代表它在陸地、海洋與天空中都能奔馳！是路上非常高貴顯眼的代表！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='none' stroke='%23334155' stroke-width='5'/><polygon points='50,11 59,48 50,44' fill='%2364748B'/><polygon points='50,11 41,48 50,44' fill='%2394A3B8'/><polygon points='84,70 52,55 56,51' fill='%2364748B'/><polygon points='84,70 52,62 52,55' fill='%2394A3B8'/><polygon points='16,70 48,55 48,62' fill='%2364748B'/><polygon points='16,70 44,51 48,55' fill='%2394A3B8'/></svg>"
-      },
-      {
-        zh: "奧迪",
-        en: "Audi",
-        origin: "🇩🇪 德國",
-        icons: "💍 🏎️ ⚡",
-        fact: "標誌上的四個銀色圓環，代表過去四家歷史悠久的汽車廠緊緊相扣、團結在一起！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 80'><circle cx='35' cy='40' r='23' fill='none' stroke='%23475569' stroke-width='6'/><circle cx='65' cy='40' r='23' fill='none' stroke='%23475569' stroke-width='6'/><circle cx='95' cy='40' r='23' fill='none' stroke='%23475569' stroke-width='6'/><circle cx='125' cy='40' r='23' fill='none' stroke='%23475569' stroke-width='6'/></svg>"
-      },
-      {
-        zh: "BMW (寶馬)",
-        en: "BMW",
-        origin: "🇩🇪 德國",
-        icons: "🔵 ⚪ 🏁",
-        fact: "藍白相間的圖案來自德國巴伐利亞州的旗幟，看起來就像旋轉的飛機螺旋槳！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23000'/><circle cx='50' cy='50' r='33' fill='%23FFF'/><path d='M50 17 A33 33 0 0 1 83 50 L50 50 Z' fill='%230066B1'/><path d='M50 83 A33 33 0 0 1 17 50 L50 50 Z' fill='%230066B1'/><circle cx='50' cy='50' r='46' fill='none' stroke='%23CBD5E1' stroke-width='3'/><text x='50' y='14' fill='%23FFF' font-size='9' font-weight='900' text-anchor='middle' font-family='sans-serif'>BMW</text></svg>"
-      },
-      {
-        zh: "豐田",
-        en: "Toyota",
-        origin: "🇯🇵 日本",
-        icons: "🐂 🚕 🌟",
-        fact: "路上最常見的牛頭牌！三個橢圓圈緊密交疊，象徵車廠與車主心心相印！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 90'><ellipse cx='60' cy='45' rx='55' ry='38' fill='none' stroke='%23EB0A1E' stroke-width='7'/><ellipse cx='60' cy='36' rx='28' ry='16' fill='none' stroke='%23EB0A1E' stroke-width='6'/><ellipse cx='60' cy='48' rx='14' ry='32' fill='none' stroke='%23EB0A1E' stroke-width='6'/></svg>"
-      },
-      {
-        zh: "法拉利",
-        en: "Ferrari",
-        origin: "🇮🇹 義大利",
-        icons: "🐎 🏎️ 🚩",
-        fact: "亮紅色的義大利超跑！一匹用兩隻腳站立起來、奮力嘶鳴的黑色神駒！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 120'><rect x='10' y='10' width='70' height='100' rx='10' fill='%23FFF200' stroke='%23000' stroke-width='3'/><rect x='10' y='10' width='23.3' height='8' fill='%23009246'/><rect x='33.3' y='10' width='23.3' height='8' fill='%23FFF'/><rect x='56.6' y='10' width='23.3' height='8' fill='%23CE2B37'/><text x='45' y='75' font-size='44' text-anchor='middle'>🐎</text><text x='45' y='100' font-size='12' font-weight='900' font-family='serif' text-anchor='middle'>Ferrari</text></svg>"
-      },
-      {
+        logo: BASE_URL + "lamborghini.png",
         zh: "藍寶堅尼",
         en: "Lamborghini",
         origin: "🇮🇹 義大利",
         icons: "🐂 🏎️ ⚡",
-        fact: "大家都叫它『大牛』！金色盾牌裡是一隻力氣超級大、準備向前衝撞的狂野公牛！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><path d='M15 15 L85 15 L80 75 L50 110 L20 75 Z' fill='%23000' stroke='%23E5A93C' stroke-width='5'/><rect x='25' y='22' width='50' height='10' rx='2' fill='%23E5A93C'/><text x='50' y='30' fill='%23000' font-size='7' font-weight='900' text-anchor='middle' font-family='sans-serif'>LAMBORGHINI</text><text x='50' y='82' font-size='44' text-anchor='middle'>🐂</text></svg>"
+        fact: "大家都叫它『大牛』！金色盾牌裡是一隻力氣超級大、準備向前衝撞的狂野公牛！"
       },
       {
+        logo: BASE_URL + "porsche.png",
         zh: "保時捷",
         en: "Porsche",
         origin: "🇩🇪 德國",
         icons: "🐎 🛡️ 🏎️",
-        fact: "德國的經典跑車！金色盾牌正中間有一匹精神抖擻的黑馬，還有美麗的鹿角條紋！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'><path d='M20 15 L80 15 C80 15 85 65 50 105 C15 65 20 15 20 15 Z' fill='%23D97706' stroke='%23000' stroke-width='4'/><rect x='24' y='18' width='52' height='10' fill='%23000'/><text x='50' y='26' fill='%23FEF3C7' font-size='8' font-weight='900' text-anchor='middle' font-family='sans-serif'>PORSCHE</text><path d='M35 34 L65 34 C65 34 68 55 50 82 C32 55 35 34 35 34 Z' fill='%23FEF3C7' stroke='%23000' stroke-width='2'/><text x='50' y='65' font-size='30' text-anchor='middle'>🐎</text></svg>"
+        fact: "德國的經典跑車！金色盾牌正中間有一匹精神抖擻的黑馬，還有美麗的鹿角條紋！"
       },
       {
+        logo: BASE_URL + "mercedes-benz.png",
+        zh: "賓士",
+        en: "Mercedes-Benz",
+        origin: "🇩🇪 德國",
+        icons: "⭐ 👑 🚗",
+        fact: "三芒星標誌代表它在陸地、海洋與天空中都能奔馳！是路上非常高貴顯眼的代表！"
+      },
+      {
+        logo: BASE_URL + "ferrari.png",
+        zh: "法拉利",
+        en: "Ferrari",
+        origin: "🇮🇹 義大利",
+        icons: "🐎 🏎️ 🚩",
+        fact: "亮紅色的義大利超跑！一匹用兩隻腳站立起來、奮力嘶鳴的黑色神駒！"
+      },
+      {
+        logo: BASE_URL + "bmw.png",
+        zh: "BMW (寶馬)",
+        en: "BMW",
+        origin: "🇩🇪 德國",
+        icons: "🔵 ⚪ 🏁",
+        fact: "藍白相間的圖案來自德國巴伐利亞州的旗幟，看起來就像旋轉的飛機螺旋槳！"
+      },
+      {
+        logo: BASE_URL + "audi.png",
+        zh: "奧迪",
+        en: "Audi",
+        origin: "🇩🇪 德國",
+        icons: "💍 🏎️ ⚡",
+        fact: "標誌上的四個銀色圓環，代表過去四家歷史悠久的汽車廠緊緊相扣、團結在一起！"
+      },
+      {
+        logo: BASE_URL + "maserati.png",
+        zh: "瑪莎拉蒂",
+        en: "Maserati",
+        origin: "🇮🇹 義大利",
+        icons: "🔱 🌊 🏎️",
+        fact: "大家都叫它『海神』！標誌是海神波賽頓手裡威力無窮的三叉戟！"
+      },
+      {
+        logo: BASE_URL + "toyota.png",
+        zh: "豐田",
+        en: "Toyota",
+        origin: "🇯🇵 日本",
+        icons: "🐂 🚕 🌟",
+        fact: "路上最常見的牛頭牌！三個橢圓圈緊密交疊，象徵車廠與車主心心相印！"
+      },
+      {
+        logo: BASE_URL + "volkswagen.png",
         zh: "福斯",
         en: "Volkswagen",
         origin: "🇩🇪 德國",
         icons: "🐞 🚙 💙",
-        fact: "招牌的金龜車超級可愛！藍色圈圈裡巧妙疊合著英文字母 V 與 W！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23001E50'/><circle cx='50' cy='50' r='39' fill='none' stroke='%23FFF' stroke-width='5'/><path d='M28 32 L40 64 L47 45 L41 32 Z' fill='%23FFF'/><path d='M72 32 L60 64 L53 45 L59 32 Z' fill='%23FFF'/><path d='M44 67 L50 82 L56 67 L50 51 Z' fill='%23FFF'/></svg>"
+        fact: "招牌的金龜車超級可愛！藍色圈圈裡巧妙疊合著英文字母 V 與 W！"
       },
       {
+        logo: BASE_URL + "lexus.png",
+        zh: "凌志 (Lexus)",
+        en: "Lexus",
+        origin: "🇯🇵 日本",
+        icons: "✨ 🛋️ 🚗",
+        fact: "豐田家族的頂級豪華名車！銀色橢圓包著俐落優雅的 L 字母！"
+      },
+      {
+        logo: BASE_URL + "mini.png",
         zh: "MINI (迷你)",
         en: "MINI",
         origin: "🇬🇧 英國",
         icons: "🇬🇧 🚗 🪽",
-        fact: "圓圓可愛的英倫小車！黑色圓圈兩旁長著展開的銀色小翅膀！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 70'><path d='M15 35 L50 25 L50 45 Z' fill='%23334155'/><path d='M125 35 L90 25 L90 45 Z' fill='%23334155'/><circle cx='70' cy='35' r='22' fill='%23000' stroke='%2394A3B8' stroke-width='3'/><text x='70' y='41' fill='%23FFF' font-size='14' font-weight='900' text-anchor='middle' font-family='sans-serif'>MINI</text></svg>"
+        fact: "圓圓可愛的英倫小車！黑色圓圈兩旁長著展開的銀色小翅膀！"
       },
       {
+        logo: BASE_URL + "volvo.png",
+        zh: "富豪 (Volvo)",
+        en: "Volvo",
+        origin: "🇸🇪 瑞典",
+        icons: "🛡️ 👶 🇸🇪",
+        fact: "全世界最安全的車車！右上角帶有小箭頭的鋼鐵圓環，象徵堅不可摧的守護！"
+      },
+      {
+        logo: BASE_URL + "ford.png",
         zh: "福特",
         en: "Ford",
         origin: "🇺🇸 美國",
         icons: "🛻 🏭 💙",
-        fact: "深藍色的漂亮橢圓裡，寫著優美的手寫簽名，是美國最普及的皮卡車霸主！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 70'><ellipse cx='60' cy='35' rx='55' ry='30' fill='%23002C6C' stroke='%23FFF' stroke-width='4'/><text x='60' y='44' fill='%23FFF' font-size='28' font-style='italic' font-family='serif' font-weight='bold' text-anchor='middle'>Ford</text></svg>"
+        fact: "深藍色的漂亮橢圓裡，寫著優美的手寫簽名，是美國最普及的皮卡車霸主！"
       },
       {
+        logo: BASE_URL + "honda.png",
         zh: "本田",
         en: "Honda",
         origin: "🇯🇵 日本",
         icons: "🔤 🚗 🛵",
-        fact: "經典大方的銀色『H』，不只會造省油耐用的休旅車，摩托車技術也是世界第一！",
-        logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='15' y='15' width='70' height='70' rx='18' fill='none' stroke='%23475569' stroke-width='6'/><path d='M32 30 L35 70 L43 70 L43 55 L57 55 L57 70 L65 70 L68 30 L59 30 L59 47 L41 47 L41 30 Z' fill='%23475569'/></svg>"
+        fact: "經典大方的銀色『H』，不只會造省油耐用的休旅車，摩托車技術也是世界第一！"
+      },
+      {
+        logo: BASE_URL + "subaru.png",
+        zh: "速霸陸",
+        en: "Subaru",
+        origin: "🇯🇵 日本",
+        icons: "✨ 🌌 🚙",
+        fact: "深藍夜空中的六顆閃亮昴宿星團！四輪驅動爬山抓地力超級厲害！"
       }
     ];
 
-    /* 3. 遊戲邏輯 */
+    /* 遊戲控制器 */
     let deck = [];
     let currentIndex = 0;
     let stars = 0;
@@ -304,10 +340,10 @@
       const data = deck[idx];
       document.getElementById('current-index').textContent = idx + 1;
 
-      // 載入 Base64 圖片
+      // 載入真實透明底 PNG 圖片
       document.getElementById('logo-img').src = data.logo;
 
-      // 載入解答
+      // 載入背面解答
       document.getElementById('country-badge').textContent = data.origin;
       document.getElementById('car-zh').textContent = data.zh;
       document.getElementById('car-en').textContent = data.en;
